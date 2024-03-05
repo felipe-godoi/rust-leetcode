@@ -1,0 +1,3 @@
+Primeiramente pensei em uma solução bem direta, onde eu usei o match para pegar o valor de cada letra dos algarismos romanos e em cada letra possivelmente subtratora eu adicionei um código para verificar se a próxima letra seria passível de subtração, se fosse eu retornava o valor negativo.
+
+Após isso consultei outras soluções pela internet e vi que era mais fácil utilizando um hashmap e a regra de que os numeros são escritos do maior para o menor, da esquerda para a direita, com a exceção das subtrações.

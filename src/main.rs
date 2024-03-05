@@ -1,8 +1,11 @@
 use std::fs;
 
+use exercise::Mode;
+
 use crate::exercise::{Exercise, ExerciseList};
 
 mod exercise;
+mod exercises;
 
 fn main() {
     let toml_str = &fs::read_to_string("exercises.toml").unwrap();
@@ -14,19 +17,65 @@ fn main() {
     });
 
     let exercise = find_exercise(&exercise_name, &exercises);
-    let compiled = exercise.compile();
+    run(exercise).unwrap_or_else(|_| std::process::exit(1));
+}
 
-    if let Err(output) = compiled {
-        println!("Failed to compile the exercise: {}", output.stderr);
-        std::process::exit(1);
-    } else if let Ok(exercise) = compiled {
-        let output = exercise.run();
+fn compile_and_run(exercise: &Exercise) -> Result<(), ()> {
+    let compilation_result = exercise.compile();
+    let compilation = match compilation_result {
+        Ok(compilation) => compilation,
+        Err(output) => {
+            println!("stderr: {}", output.stderr);
+            return Err(());
+        }
+    };
 
-        match output {
-            Ok(output) => println!("stdout: {}", output.stdout),
-            Err(output) => println!("stderr: {}", output.stderr),
+    let result = compilation.run();
+
+    match result {
+        Ok(output) => {
+            println!("{}", output.stdout);
+            Ok(())
+        }
+        Err(output) => {
+            println!("{}", output.stdout);
+            println!("{}", output.stderr);
+
+            Err(())
         }
     }
+}
+
+fn compile_and_test(exercise: &Exercise) -> Result<(), ()> {
+    let compilation_result = exercise.compile();
+    let compilation = match compilation_result {
+        Ok(compilation) => compilation,
+        Err(output) => {
+            println!("stderr: {}", output.stderr);
+            return Err(());
+        }
+    };
+
+    let result = compilation.run();
+
+    match result {
+        Ok(output) => {
+            println!("{}", output.stdout);
+            Ok(())
+        }
+        Err(output) => {
+            println!("{}", output.stdout);
+            Err(())
+        }
+    }
+}
+
+fn run(exercise: &Exercise) -> Result<(), ()> {
+    match exercise.mode {
+        Mode::Test => compile_and_test(exercise)?,
+        Mode::Compile => compile_and_run(exercise)?,
+    }
+    Ok(())
 }
 
 fn find_exercise<'a>(name: &str, exercises: &'a [Exercise]) -> &'a Exercise {

@@ -1,3 +1,4 @@
 [[exercises]]
-name = "teste"
-path = "exercises/teste/teste.rs"
+name = "ex13"
+path = "src/exercises/ex13.rs"
+mode = "test"
