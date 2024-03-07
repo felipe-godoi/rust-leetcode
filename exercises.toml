@@ -2,3 +2,13 @@
 name = "ex13"
 path = "src/exercises/ex13.rs"
 mode = "test"
+
+[[exercises]]
+name = "ex20"
+path = "src/exercises/ex20.rs"
+mode = "test"
+
+[[exercises]]
+name = "ex21"
+path = "src/exercises/ex21.rs"
+mode = "test"

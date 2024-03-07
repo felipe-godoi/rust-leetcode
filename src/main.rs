@@ -1,80 +1,38 @@
-use std::fs;
-
-use exercise::Mode;
-
 use crate::exercise::{Exercise, ExerciseList};
+use clap::Parser;
+use std::{fs, io};
 
 mod exercise;
 mod exercises;
+mod generate;
+mod run;
 
-fn main() {
+/// Program to help solve leetcode exercises
+#[derive(Parser)]
+#[command(version)]
+struct Args {
+    /// Exercise name to look for
+    #[arg(required_unless_present = "generate")]
+    exercise: Option<String>,
+    /// Generate new exercise file
+    #[arg(short, long, value_name = "FILE")]
+    generate: Option<String>,
+}
+
+fn main() -> Result<(), io::Error> {
     let toml_str = &fs::read_to_string("exercises.toml").unwrap();
     let exercises = toml::from_str::<ExerciseList>(toml_str).unwrap().exercises;
 
-    let exercise_name = std::env::args().nth(1).unwrap_or_else(|| {
-        println!("No exercise name provided!");
-        std::process::exit(1)
-    });
+    let args = Args::parse();
 
-    let exercise = find_exercise(&exercise_name, &exercises);
-    run(exercise).unwrap_or_else(|_| std::process::exit(1));
-}
-
-fn compile_and_run(exercise: &Exercise) -> Result<(), ()> {
-    let compilation_result = exercise.compile();
-    let compilation = match compilation_result {
-        Ok(compilation) => compilation,
-        Err(output) => {
-            println!("stderr: {}", output.stderr);
-            return Err(());
-        }
-    };
-
-    let result = compilation.run();
-
-    match result {
-        Ok(output) => {
-            println!("{}", output.stdout);
-            Ok(())
-        }
-        Err(output) => {
-            println!("{}", output.stdout);
-            println!("{}", output.stderr);
-
-            Err(())
-        }
+    if let Some(exercise_name) = args.exercise {
+        let exercise = find_exercise(&exercise_name, &exercises);
+        run::run(exercise).unwrap_or_else(|_| std::process::exit(1));
+    } else if let Some(filename) = args.generate {
+        generate::generate_exercise(filename.clone())?;
+        println!("Exercise '{}' generated!", filename);
     }
-}
 
-fn compile_and_test(exercise: &Exercise) -> Result<(), ()> {
-    let compilation_result = exercise.compile();
-    let compilation = match compilation_result {
-        Ok(compilation) => compilation,
-        Err(output) => {
-            println!("stderr: {}", output.stderr);
-            return Err(());
-        }
-    };
-
-    let result = compilation.run();
-
-    match result {
-        Ok(output) => {
-            println!("{}", output.stdout);
-            Ok(())
-        }
-        Err(output) => {
-            println!("{}", output.stdout);
-            Err(())
-        }
-    }
-}
-
-fn run(exercise: &Exercise) -> Result<(), ()> {
-    match exercise.mode {
-        Mode::Test => compile_and_test(exercise)?,
-        Mode::Compile => compile_and_run(exercise)?,
-    }
     Ok(())
 }
 

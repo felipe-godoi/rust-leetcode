@@ -76,17 +76,17 @@ mod test {
     use super::*;
 
     #[test]
-    fn case_test1() {
+    fn test_case1() {
         assert_eq!(convert_roman_to_integer("III".to_owned()), 3)
     }
 
     #[test]
-    fn case_test2() {
+    fn test_case2() {
         assert_eq!(convert_roman_to_integer("LVIII".to_owned()), 58)
     }
 
     #[test]
-    fn case_test3() {
+    fn test_case3() {
         assert_eq!(convert_roman_to_integer("MCMXCIV".to_owned()), 1994)
     }
 }
